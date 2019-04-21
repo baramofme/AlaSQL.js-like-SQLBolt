@@ -1,0 +1,192 @@
+<template>
+  <v-app>
+  <v-container class="exercise" exerciseid="ex1">
+    <v-layout class="body row wrap">
+      <v-layout>
+        <v-flex xs-12 sm-12 md-12 class="datatable_title">Table: movies</v-flex>
+      </v-layout>
+      <v-layout wrap>
+      <v-flex class="table_and_input xs-8 sm-8 md-8">
+        <v-layout>
+          <div class="message" style=""></div>
+        </v-layout>
+        <v-layout datatableid="movies">
+          <v-flex>
+            <v-data-table
+              :headers="headers"
+              :items="movies"
+              :rows-per-page-items=[6]
+              class="datatable"
+            >
+              <!--class="elevation-1"-->
+              <template v-slot:items="props">
+                <td>{{ props.item.id }}</td>
+                <td class="text-xs-left">{{ props.item.title }}</td>
+                <td class="text-xs-left">{{ props.item.director }}</td>
+                <td class="text-xs-center">{{ props.item.year }}</td>
+                <td class="text-xs-left">{{ props.item.length_minutes }}</td>
+              </template>
+            </v-data-table>
+
+          </v-flex>
+        </v-layout>
+        <v-layout class="sqlinput_container">
+          <v-flex>
+            <v-flex class="sqlinput ace_editor ace-tm" targetdatatableid="movies" style="font-size: 1em;">
+              <v-textarea
+                solo
+                flat
+                name="input-7-4"
+                label="Solo textarea"
+                no-resize="true"
+                value="Select * from Movies"
+              ></v-textarea>
+            </v-flex>
+            <v-flex text-xs-right><a href="#" class="clear">RESET</a></v-flex>
+          </v-flex>
+
+        </v-layout>
+      </v-flex><!-- /table_and_input -->
+      <v-flex class="tasks_and_continue xs-4 sm-4 md-4">
+        <div class="tasks_title">
+          Exercise 1 — <span class="title">Tasks</span>
+        </div>
+        <v-stepper v-model="step" vertical>
+          <v-stepper-step :complete="step > 1" step="1">Find the `title` of each film</v-stepper-step>
+          <v-stepper-step :complete="step > 2" step="2"> Find the `director` of each film</v-stepper-step>
+          <v-stepper-step :complete="step > 3" step="3">Find the `title` and `director` of each film</v-stepper-step>
+          <v-stepper-step :complete="step > 4" step="4">Find the `title` and `year` of each film</v-stepper-step>
+          <v-stepper-step step="5">Find `all` the information about each film</v-stepper-step>
+        </v-stepper>
+        <div class="solve_hint">
+          Stuck? Read this task's <a href="#" class="solution_trigger">Solution</a>.<br>
+          Solve all tasks to continue to the next lesson.
+        </div>
+        <a href="/lesson/select_queries_with_constraints" class="continue disabled">
+          Finish above Tasks
+        </a>
+      </v-flex><!-- /tasks_and_continue -->
+      </v-layout>
+    </v-layout><!-- /body -->
+  </v-container>
+  </v-app>
+</template>
+
+<script>
+  import movies from '../dataset/movies'
+  export default {
+    data() {
+      return {
+        step: 2,
+        headers: movies.headers,
+        movies: movies.data
+      }
+    }
+  }
+</script>
+
+
+<style scoped>
+
+  /* ========= 최상단 루트 와 바로 아래 본문 ==========*/
+  .exercise {
+    margin: .5em auto 0 auto;
+    padding: 19.5px 26px 26px 26px;
+    background: #f0ede5;
+    -webkit-border-radius: .25em .25em .25em .25em;
+    -moz-border-radius: .25em .25em .25em .25em;
+    border-radius: .25em .25em .25em .25em;
+  }
+
+  .exercise .body {
+    margin: 0;
+  }
+
+  .exercise .body {
+    margin: 0;
+    font-size: 1.125em;
+  }
+
+  /* ========= 데이터 테이블 제목 ==========*/
+  .datatable_title {
+    /*padding-left: 0;*/
+    /*padding-right: 0;*/
+    /*overflow-x: hidden;*/
+    /*white-space: nowrap;*/
+  }
+
+  .datatable_title {
+    /*padding: .5em 0;*/
+    /*font-size: .9375em;*/
+    /*text-transform: capitalize;*/
+    /*color: #757575;*/
+  }
+
+  /* ========= 테이블과 입력영역 ==========*/
+
+  .table_and_input {
+    /* 겹쳐서 보이게 되어서 주석처리함*/
+    /*height: 25.1875em;*/
+  }
+
+  .exercise .body .table_and_input {
+    padding: 0;
+    background: #ebeae2;
+    border: 1px solid #stepe5dc;
+  }
+
+  /* ========= 오류 메시지 영역 ==========*/
+  .exercise .body .table_and_input .message {
+    position: absolute;
+    bottom: 10.3em;
+    margin: .5em;
+    display: none;
+    padding: .25em .6em;
+    font-size: .875em;
+    background: #186bdd;
+    color: #fff;
+  }
+
+  /* ========= 데이터테이블 영역 ==========*/
+  .exercise .body .table_and_input .datatable {
+    height: 24em;
+  }
+
+  .exercise .body .datatable {
+    padding: 0;
+    overflow-y: scroll;
+  }
+
+  /* ========= SQL 입력 영역 ==========*/
+  .exercise .body .table_and_input .sqlinput_container {
+    position: relative;
+    padding: .5em 0;
+    border: 0;
+    border-top: 1px solid #stepe5dc;
+    background: #fff;
+  }
+
+  {
+    margin-top: 0px
+  ;
+    width: 641px
+  ;
+    height: 175px
+  ;
+    margin-left: 0px
+  ;
+  }
+
+  /* ========= 할일과 계속 영역 ==========*/
+  .exercise .body .tasks_and_continue {
+    height: 24.6875em;
+  }
+
+  .content .exercise .body .tasks_and_continue {
+    /*position: relative;*/
+    /*padding: 0;*/
+    background: #e2e0d5;
+    border: 1px solid #stepe5dc;
+    border-width: 2px 1px 1px 0;
+  }
+</style>
