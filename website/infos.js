@@ -57,6 +57,7 @@ export const sidebars = {
         {title:'LoveField Lesson 17: 행 갱신', link: '/sqlBolt/update'},
         {title:'LoveField Lesson 18: 행 삭제', link: '/sqlBolt/delete'},
         {title:'LoveField Lesson X: 무한의 세상으로!', link: '/sqlBolt/x'},
+        {title:'LoveField Lesson 스펙: 초기화, 다중 접속, 업그레이드 등 ', link: '/sqlBolt/spec'},
       ]
     },
   ],
