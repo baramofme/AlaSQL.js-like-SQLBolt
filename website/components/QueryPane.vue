@@ -1,81 +1,83 @@
 <template>
   <v-app>
-  <v-container class="exercise" exerciseid="ex1">
-    <v-layout class="body row wrap">
-      <v-layout>
-        <v-flex xs-12 sm-12 md-12 class="datatable_title">Table: movies</v-flex>
-      </v-layout>
-      <v-layout wrap>
-      <v-flex class="table_and_input xs-8 sm-8 md-8">
+    <v-container class="exercise" exerciseid="ex1">
+      <v-layout class="body row wrap">
         <v-layout>
-          <div class="message" style=""></div>
+          <v-flex xs-12 sm-12 md-12 class="datatable_title">Table: movies</v-flex>
         </v-layout>
-        <v-layout datatableid="movies">
-          <v-flex>
-            <div>{{res}}</div>
-            <v-data-table
-              :headers="headers"
-              :items="movies"
-              :rows-per-page-items=[6]
-              class="datatable"
-            >
-              <!--class="elevation-1"-->
-              <!--<template v-slot:items="props">-->
-                <!--<td v-for="">{{ props.item.id }}</td>-->
-                <!--<td class="text-xs-left">{{ props.item.title }}</td>-->
-                <!--<td class="text-xs-left">{{ props.item.director }}</td>-->
-                <!--<td class="text-xs-center">{{ props.item.year }}</td>-->
-                <!--<td class="text-xs-left">{{ props.item.length_minutes }}</td>-->
-              <!--</template>-->
-            </v-data-table>
-
-          </v-flex>
-        </v-layout>
-        <v-layout class="sqlinput_container">
-          <v-flex>
+        <v-layout wrap>
+          <v-flex class="table_and_input xs-8 sm-8 md-8">
             <v-layout>
-              <v-flex class="sqlinput ace_editor ace-tm" targetdatatableid="movies" style="font-size: 1em;">
-                <v-textarea
-                  solo
-                  flat
-                  name="input-7-4"
-                  label="Write query"
-                  :no-resize="true"
-                  v-model="query"
-                ></v-textarea>
+              <div class="message" style=""></div>
+            </v-layout>
+            <v-layout datatableid="movies">
+              <v-flex>
+                <div>{{res}}</div>
+                <v-data-table
+                  :headers="headers"
+                  :items="movies"
+                  :rows-per-page-items=[6]
+                  class="datatable"
+                >
+                  <!--class="elevation-1"-->
+                  <!--<template v-slot:items="props">-->
+                  <!--<td v-for="">{{ props.item.id }}</td>-->
+                  <!--<td class="text-xs-left">{{ props.item.title }}</td>-->
+                  <!--<td class="text-xs-left">{{ props.item.director }}</td>-->
+                  <!--<td class="text-xs-center">{{ props.item.year }}</td>-->
+                  <!--<td class="text-xs-left">{{ props.item.length_minutes }}</td>-->
+                  <!--</template>-->
+                </v-data-table>
+
               </v-flex>
             </v-layout>
-            <v-layout>
-              <v-flex text-xs-right>
-                <v-btn @click="runQuery" class="clear">RUN</v-btn> <v-btn class="clear">RESET</v-btn>
+            <v-layout class="sqlinput_container">
+              <v-flex>
+                <v-layout>
+                  <v-flex class="sqlinput ace_editor ace-tm" targetdatatableid="movies" style="font-size: 1em;">
+                    <v-textarea
+                      solo
+                      flat
+                      name="input-7-4"
+                      label="Write query"
+                      :no-resize="true"
+                      v-model="query"
+                    ></v-textarea>
+                  </v-flex>
+                </v-layout>
+                <v-layout>
+                  <v-flex text-xs-right>
+                    <v-btn @click="runQuery" class="clear">RUN</v-btn>
+                    <v-btn class="clear">RESET</v-btn>
+                  </v-flex>
+                </v-layout>
               </v-flex>
-            </v-layout>
-          </v-flex>
 
+            </v-layout>
+          </v-flex><!-- /table_and_input -->
+          <v-flex v-if="hideTask" class="tasks_and_continue xs-4 sm-4 md-4">
+            <div class="tasks_title">
+              Exercise 1 — <span class="title">Tasks</span>
+            </div>
+            <v-stepper v-model="step" vertical>
+              <v-stepper-step :complete="step > 1" step="1">Find the `title` of each film</v-stepper-step>
+              <v-stepper-step :complete="step > 2" step="2"> Find the `director` of each film</v-stepper-step>
+              <v-stepper-step :complete="step > 3" step="3">Find the `title` and `director` of each film
+              </v-stepper-step>
+              <v-stepper-step :complete="step > 4" step="4">Find the `title` and `year` of each film</v-stepper-step>
+              <v-stepper-step step="5">Find `all` the information about each film</v-stepper-step>
+            </v-stepper>
+            <div class="solve_hint">
+              Stuck? Read this task's <a href="#" class="solution_trigger">Solution</a>.<br>
+              Solve all tasks to continue to the next lesson.
+            </div>
+            <a href="/lesson/select_queries_with_constraints" class="continue disabled">
+              Finish above Tasks
+            </a>
+          </v-flex><!-- /tasks_and_continue -->
         </v-layout>
-      </v-flex><!-- /table_and_input -->
-      <v-flex v-if="hideTask" class="tasks_and_continue xs-4 sm-4 md-4">
-        <div class="tasks_title">
-          Exercise 1 — <span class="title">Tasks</span>
-        </div>
-        <v-stepper v-model="step" vertical>
-          <v-stepper-step :complete="step > 1" step="1">Find the `title` of each film</v-stepper-step>
-          <v-stepper-step :complete="step > 2" step="2"> Find the `director` of each film</v-stepper-step>
-          <v-stepper-step :complete="step > 3" step="3">Find the `title` and `director` of each film</v-stepper-step>
-          <v-stepper-step :complete="step > 4" step="4">Find the `title` and `year` of each film</v-stepper-step>
-          <v-stepper-step step="5">Find `all` the information about each film</v-stepper-step>
-        </v-stepper>
-        <div class="solve_hint">
-          Stuck? Read this task's <a href="#" class="solution_trigger">Solution</a>.<br>
-          Solve all tasks to continue to the next lesson.
-        </div>
-        <a href="/lesson/select_queries_with_constraints" class="continue disabled">
-          Finish above Tasks
-        </a>
-      </v-flex><!-- /tasks_and_continue -->
-      </v-layout>
-    </v-layout><!-- /body -->
-  </v-container>
+      </v-layout><!-- /body -->
+    </v-container>
   </v-app>
 </template>
 
@@ -83,31 +85,26 @@
   import {Vue, Component, Prop} from 'vue-property-decorator'
 
   import movies from '../dataset/movies'
-
-  /** 초기화하면서 실행되는 스크립트 */
-  interface InitScripts{
-    tableName:string;
-    queries:string[];
-  }
+  import InitScripts from "./InitScripts";
 
   @Component({
     name: 'QueryPane'
   })
   export default class QueryPane extends Vue {
 
-    @Prop({default: true}) hideTask!:boolean;
-    @Prop(String) init!:boolean;
+    @Prop({default: true}) hideTask!: boolean;
+    @Prop(InitScripts) init!: InitScripts;
 
     private alasql = require('alasql');
-    private db!:any;
-    private loading:boolean = false;
-    private query:string = '';
-    private res:any= '';
+    private db!: any;
+    private loading: boolean = false;
+    private query: string = '';
+    private res: any = '';
 
-    private runQuery(){
+    private runQuery() {
       this.loading = true;
       this.db.exec(this.query);
-      this.res = this.db.exec("SELECT * FROM one", [], (res:any)=>{
+      this.res = this.db.exec(`SELECT * FROM ${init.tableName}`, [], (res: any) => {
         this.loading = false;
       });
     }
@@ -117,16 +114,21 @@
     private headers: any = movies.headers;
     private movies: any = movies.data;
 
-    private created(){
-      this.db = new this.alasql.Database(); // - 새 alasql-database 생성
-      this.db.exec('CREATE TABLE one (two INT)'); // 테이블 생성
-      this.db.exec('INSERT INTO one (1)'); // 값 인서트
-      this.res = this.db.exec("SELECT * FROM one", [], (res:any)=>{
-        console.log(res)
-      }); // -  SELECT 쿼리 실행 후 객체의 배열을 반환받음
+    /** 주어진 초기화 스크립트를 실행한다.*/
+    private runInitScript(init: InitScripts): void {
+      for (q in init.queries) {
+        this.db.exec(q);
+      }
+      this.res = this.db.exec(`SELECT * FROM ${init.tableName}`);
     }
 
-    private mounted(){
+    private created() {
+      this.db = new this.alasql.Database(); // - 새 alasql-database 생성
+      if (this.init) {
+        this.runInitScript(this.init);
+      }
+    }
+    private mounted() {
 
     }
   }
