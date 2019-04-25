@@ -74,12 +74,15 @@
 
 <script lang="ts">
   import movies from '../dataset/movies'
-  import {Vue, Component} from 'vue-property-decorator'
+  import {Vue, Component, Prop} from 'vue-property-decorator'
 
   @Component({
     name: 'QueryPane'
   })
   export default class QueryPane extends Vue {
+
+    @Prop(Boolean) noResize!: boolean;
+
     private x: string = '';
     private step: number = 1;
     private headers: any = movies.headers;
