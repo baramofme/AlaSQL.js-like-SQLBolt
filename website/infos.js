@@ -36,7 +36,7 @@ export const sidebars = {
       title: 'SQLBolt',
       links: [
         {title:'AlaSQL.js 와 SQL 소개', link: '/sqlBolt/intro'},
-        {title:'AlaSQL.js Lesson 0: 작업 흐름', link: '/sqlBolt/work-flow'},
+        {title:'AlaSQL.js 에서 좋아할만한 기능과 한계', link: '/sqlBolt/features-and-limitation'},
       ]
     },
     {
