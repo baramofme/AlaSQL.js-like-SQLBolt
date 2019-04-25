@@ -28,10 +28,14 @@ Node.js 에서:
     var mybase = new alasql.Database('mybase');
     console.log(alasql.databases.mybase);
     
+> 테스트 오류 : TypeError: Cannot read property 'myTable' of undefined
+    
 각 데이터베이스는 다음의 메소드와 함께 사용될 수 있습니다:    
 
     var db = new alasql.Database() - 새 alasql-database 생성
     var res = db.exec("SELECT * FROM one") -  SELECT 쿼리 실행 후 객체의 배열을 반환받음
+     
+<query-pane :hideTask="true"></query-pane>     
      
 일반적으로 alasql.js는 동기식으로 작동하지만 콜백을 사용할 수 있습니다.
 

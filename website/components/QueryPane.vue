@@ -12,6 +12,7 @@
         </v-layout>
         <v-layout datatableid="movies">
           <v-flex>
+            <div>{{res}}</div>
             <v-data-table
               :headers="headers"
               :items="movies"
@@ -38,7 +39,7 @@
                 flat
                 name="input-7-4"
                 label="Solo textarea"
-                no-resize="true"
+                :no-resize="true"
                 value="Select * from Movies"
               ></v-textarea>
             </v-flex>
@@ -47,7 +48,7 @@
 
         </v-layout>
       </v-flex><!-- /table_and_input -->
-      <v-flex class="tasks_and_continue xs-4 sm-4 md-4">
+      <v-flex v-if="hideTask" class="tasks_and_continue xs-4 sm-4 md-4">
         <div class="tasks_title">
           Exercise 1 — <span class="title">Tasks</span>
         </div>
@@ -73,20 +74,37 @@
 </template>
 
 <script lang="ts">
-  import movies from '../dataset/movies'
   import {Vue, Component, Prop} from 'vue-property-decorator'
+
+  import movies from '../dataset/movies'
 
   @Component({
     name: 'QueryPane'
   })
   export default class QueryPane extends Vue {
 
-    @Prop(Boolean) noResize!: boolean;
+    @Prop(Boolean) hideTask!:boolean;
+    @Prop(String) query!:boolean;
+
+    private alasql = require('alasql');
+    private db!:any;
+    private res!:any;
 
     private x: string = '';
     private step: number = 1;
     private headers: any = movies.headers;
     private movies: any = movies.data
+
+    private created(){
+      this.db = new this.alasql.Database(); // - 새 alasql-database 생성
+      this.db.exec('CREATE TABLE one (two INT)'); // 테이블 생성
+      this.db.exec('INSERT INTO one (1)'); // 테이블 생성
+      this.res = this.db.exec("SELECT * FROM one"); // -  SELECT 쿼리 실행 후 객체의 배열을 반환받음
+    }
+
+    private mounted(){
+
+    }
   }
 </script>
 
