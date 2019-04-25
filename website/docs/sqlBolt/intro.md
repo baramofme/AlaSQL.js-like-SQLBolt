@@ -71,7 +71,7 @@ AlaSQL - _( [à la](http://en.wiktionary.org/wiki/%C3%A0_la) [SQL]) [ælæ ɛskj
 이 라이브러리는 다음을 위해 디자인되었습니다:
 
 * 뚱뚱한 클라이언트 BI 및 ERP 애플리케이션을위한 빠른 메모리 내 SQL 데이터 처리
-* 데이터 가져 오기 / 조작 / 여러 형식의 내보내기로 지속성을 위한 쉬운 ETL 및 옵션
+* 데이터 가져 오기 / 조작 / 여러 형식의 내보내기로 지속성을 위한 쉬운 ETL(extract, transfer, and loading) 및 옵션
 * 모든 주요 브라우저, Node.js 및 모바일 애플리케이션
 
 쿼리를 작성할 때 JavaScript의 동적 특성을 이용하여 [속도]에 중점을 둡니다.
