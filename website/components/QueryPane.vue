@@ -20,30 +20,36 @@
               class="datatable"
             >
               <!--class="elevation-1"-->
-              <template v-slot:items="props">
-                <td>{{ props.item.id }}</td>
-                <td class="text-xs-left">{{ props.item.title }}</td>
-                <td class="text-xs-left">{{ props.item.director }}</td>
-                <td class="text-xs-center">{{ props.item.year }}</td>
-                <td class="text-xs-left">{{ props.item.length_minutes }}</td>
-              </template>
+              <!--<template v-slot:items="props">-->
+                <!--<td v-for="">{{ props.item.id }}</td>-->
+                <!--<td class="text-xs-left">{{ props.item.title }}</td>-->
+                <!--<td class="text-xs-left">{{ props.item.director }}</td>-->
+                <!--<td class="text-xs-center">{{ props.item.year }}</td>-->
+                <!--<td class="text-xs-left">{{ props.item.length_minutes }}</td>-->
+              <!--</template>-->
             </v-data-table>
 
           </v-flex>
         </v-layout>
         <v-layout class="sqlinput_container">
           <v-flex>
-            <v-flex class="sqlinput ace_editor ace-tm" targetdatatableid="movies" style="font-size: 1em;">
-              <v-textarea
-                solo
-                flat
-                name="input-7-4"
-                label="Solo textarea"
-                :no-resize="true"
-                value="Select * from Movies"
-              ></v-textarea>
-            </v-flex>
-            <v-flex text-xs-right><a href="#" class="clear">RESET</a></v-flex>
+            <v-layout>
+              <v-flex class="sqlinput ace_editor ace-tm" targetdatatableid="movies" style="font-size: 1em;">
+                <v-textarea
+                  solo
+                  flat
+                  name="input-7-4"
+                  label="Write query"
+                  :no-resize="true"
+                  v-model="query"
+                ></v-textarea>
+              </v-flex>
+            </v-layout>
+            <v-layout>
+              <v-flex text-xs-right>
+                <v-btn @click="runQuery" class="clear">RUN</v-btn> <v-btn class="clear">RESET</v-btn>
+              </v-flex>
+            </v-layout>
           </v-flex>
 
         </v-layout>
@@ -78,28 +84,46 @@
 
   import movies from '../dataset/movies'
 
+  /** 초기화하면서 실행되는 스크립트 */
+  interface InitScripts{
+    tableName:string;
+    queries:string[];
+  }
+
   @Component({
     name: 'QueryPane'
   })
   export default class QueryPane extends Vue {
 
-    @Prop(Boolean) hideTask!:boolean;
-    @Prop(String) query!:boolean;
+    @Prop({default: true}) hideTask!:boolean;
+    @Prop(String) init!:boolean;
 
     private alasql = require('alasql');
     private db!:any;
-    private res!:any;
+    private loading:boolean = false;
+    private query:string = '';
+    private res:any= '';
+
+    private runQuery(){
+      this.loading = true;
+      this.db.exec(this.query);
+      this.res = this.db.exec("SELECT * FROM one", [], (res:any)=>{
+        this.loading = false;
+      });
+    }
 
     private x: string = '';
     private step: number = 1;
     private headers: any = movies.headers;
-    private movies: any = movies.data
+    private movies: any = movies.data;
 
     private created(){
       this.db = new this.alasql.Database(); // - 새 alasql-database 생성
       this.db.exec('CREATE TABLE one (two INT)'); // 테이블 생성
-      this.db.exec('INSERT INTO one (1)'); // 테이블 생성
-      this.res = this.db.exec("SELECT * FROM one"); // -  SELECT 쿼리 실행 후 객체의 배열을 반환받음
+      this.db.exec('INSERT INTO one (1)'); // 값 인서트
+      this.res = this.db.exec("SELECT * FROM one", [], (res:any)=>{
+        console.log(res)
+      }); // -  SELECT 쿼리 실행 후 객체의 배열을 반환받음
     }
 
     private mounted(){
