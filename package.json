@@ -15,6 +15,8 @@
     "test:unit": "poi puppet src/**/*.test.js --test --plugin @poi/puppet --framework mocha"
   },
   "dependencies": {
+    "@poi/plugin-typescript": "^12.2.1",
+    "alasql": "^0.4.11",
     "docute": "^4.13.6",
     "docute-mermaid": "^1.1.0",
     "jump.js": "^1.0.2",
@@ -31,6 +33,7 @@
     "vue-conso": "^0.2.2",
     "vue-content-loader": "^0.2.1",
     "vue-custom-console": "^1.0.4",
+    "vue-property-decorator": "^8.1.0",
     "vue-router": "^3.0.1",
     "vue-router-prefetch": "^1.1.1",
     "vue-template-compiler": "^2.6.10",

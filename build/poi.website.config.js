@@ -10,6 +10,12 @@ module.exports = {
     }
   },
   publicFolder: path.join(__dirname, '../website/docs'),
+  plugins: [
+    {
+      resolve: '@poi/plugin-typescript',
+      options: {}
+    }
+  ],
   chainWebpack(config) {
     config.resolve.alias.set('vue$', 'vue/dist/vue.esm.js')
   },
