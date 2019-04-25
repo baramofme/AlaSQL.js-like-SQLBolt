@@ -72,16 +72,18 @@
   </v-app>
 </template>
 
-<script>
+<script lang="ts">
   import movies from '../dataset/movies'
-  export default {
-    data() {
-      return {
-        step: 2,
-        headers: movies.headers,
-        movies: movies.data
-      }
-    }
+  import {Vue, Component} from 'vue-property-decorator'
+
+  @Component({
+    name: 'QueryPane'
+  })
+  export default class QueryPane extends Vue {
+    private x: string = '';
+    private step: number = 1;
+    private headers: any = movies.headers;
+    private movies: any = movies.data
   }
 </script>
 
