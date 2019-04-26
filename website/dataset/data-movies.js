@@ -13,7 +13,6 @@ export default {
   ],
 
   data: [
-
     {
       id: "1",
       title: "Toy Story",

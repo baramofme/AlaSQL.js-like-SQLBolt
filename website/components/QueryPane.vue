@@ -3,30 +3,24 @@
     <v-container class="exercise" exerciseid="ex1">
       <v-layout class="body row wrap">
         <v-layout>
-          <v-flex xs-12 sm-12 md-12 class="datatable_title">Table: movies</v-flex>
+          <v-flex xs-12 sm-12 md-12 class="datatable_title">Table: {{tableName}}</v-flex>
         </v-layout>
         <v-layout wrap>
           <v-flex class="table_and_input xs-8 sm-8 md-8">
             <v-layout>
               <div class="message" style=""></div>
             </v-layout>
-            <v-layout datatableid="movies">
+            <v-layout datatableid="data">
               <v-flex>
-                <div>{{res}}</div>
                 <v-data-table
                   :headers="headers"
-                  :items="movies"
+                  :items="res"
                   :rows-per-page-items=[6]
                   class="datatable"
                 >
-                  <!--class="elevation-1"-->
-                  <!--<template v-slot:items="props">-->
-                  <!--<td v-for="">{{ props.item.id }}</td>-->
-                  <!--<td class="text-xs-left">{{ props.item.title }}</td>-->
-                  <!--<td class="text-xs-left">{{ props.item.director }}</td>-->
-                  <!--<td class="text-xs-center">{{ props.item.year }}</td>-->
-                  <!--<td class="text-xs-left">{{ props.item.length_minutes }}</td>-->
-                  <!--</template>-->
+                  <template v-slot:items="props">
+                    <td v-for="(val) in props.item">{{ val }}</td>
+                  </template>
                 </v-data-table>
 
               </v-flex>
@@ -42,12 +36,13 @@
                       label="Write query"
                       :no-resize="true"
                       v-model="query"
+                      @keydown.enter.prevent="runUserInputQuery"
                     ></v-textarea>
                   </v-flex>
                 </v-layout>
                 <v-layout>
                   <v-flex text-xs-right>
-                    <v-btn @click="runQuery" class="clear">RUN</v-btn>
+                    <v-btn @click="runUserInputQuery" class="clear">RUN</v-btn>
                     <v-btn class="clear">RESET</v-btn>
                   </v-flex>
                 </v-layout>
@@ -67,13 +62,6 @@
               <v-stepper-step :complete="step > 4" step="4">Find the `title` and `year` of each film</v-stepper-step>
               <v-stepper-step step="5">Find `all` the information about each film</v-stepper-step>
             </v-stepper>
-            <div class="solve_hint">
-              Stuck? Read this task's <a href="#" class="solution_trigger">Solution</a>.<br>
-              Solve all tasks to continue to the next lesson.
-            </div>
-            <a href="/lesson/select_queries_with_constraints" class="continue disabled">
-              Finish above Tasks
-            </a>
           </v-flex><!-- /tasks_and_continue -->
         </v-layout>
       </v-layout><!-- /body -->
@@ -84,8 +72,7 @@
 <script lang="ts">
   import {Vue, Component, Prop} from 'vue-property-decorator'
 
-  import movies from '../dataset/movies'
-  import InitScripts from "./InitScripts";
+  import InitScript from "./InitScript";
 
   @Component({
     name: 'QueryPane'
@@ -93,7 +80,17 @@
   export default class QueryPane extends Vue {
 
     @Prop({default: true}) hideTask!: boolean;
-    @Prop(InitScripts) init!: InitScripts;
+    @Prop(String) scriptName!: string;
+
+    private scripts: any = [
+      require('../dataset/getting-started.ts')
+    ];
+
+    private script!: InitScript;
+    private tableName: string = '';
+    private initQueries!: string[];
+    private headers!: any;
+    private data!: any;
 
     private alasql = require('alasql');
     private db!: any;
@@ -101,35 +98,111 @@
     private query: string = '';
     private res: any = '';
 
-    private runQuery() {
-      this.loading = true;
-      this.db.exec(this.query);
-      this.res = this.db.exec(`SELECT * FROM ${init.tableName}`, [], (res: any) => {
-        this.loading = false;
-      });
-    }
-
     private x: string = '';
     private step: number = 1;
-    private headers: any = movies.headers;
-    private movies: any = movies.data;
 
-    /** 주어진 초기화 스크립트를 실행한다.*/
-    private runInitScript(init: InitScripts): void {
-      for (q in init.queries) {
-        this.db.exec(q);
-      }
-      this.res = this.db.exec(`SELECT * FROM ${init.tableName}`);
-    }
+    /* =============================================
+    *   Prepare component Context for interacting
+    * ============================================== */
 
     private created() {
+      this.setData();
       this.db = new this.alasql.Database(); // - 새 alasql-database 생성
-      if (this.init) {
-        this.runInitScript(this.init);
-      }
+      this.runInitScript(this.tableName, this.initQueries);
     }
-    private mounted() {
 
+    /** Set Data with given dataset name */
+    private setData() {
+      const script = this.scripts.filter((script) => {
+        return script.default.name === this.scriptName;
+      });
+
+      // console.log(script)
+      this.script = new InitScript(script[0].default);
+      this.headers = this.script.dataSet.headers;
+      this.data = this.script.dataSet.data;
+      // console.log(this.data)
+      this.tableName = this.script.tableName;
+      this.initQueries = this.script.queries;
+    }
+
+    /** Run Scripts for preparing component */
+    private runInitScript(tableName, queries): void {
+      this.runQueries(tableName, queries);
+    }
+
+    /* =============================================
+    *   Prepare component context for interacting
+    * ============================================== */
+
+    /** Execute user's query */
+    private runUserInputQuery() {
+      this.runQueries(this.tableName, this.query);
+    }
+
+    /** Execute one or more query on target table */
+    private runQueries(tableName: string, queries: string[] | string) {
+
+      this.toggleLoading();
+
+      const isArray: boolean = typeof queries === "object" && queries.constructor.name === "Array";
+      const lastQuery = isArray ? queries[queries.length - 1] : queries;
+
+      // typescript can't recognize type guard inside isArray variable.
+      if (typeof queries === "object" && queries.constructor.name === "Array") {
+        let res: any;
+        queries.forEach((q, index, array) => {
+          this.hasInsert(q) && this.data
+            ? this.db.exec(q, [this.data])
+            : this.hasSelect(q)
+              ? res = this.db.exec(q)
+              : this.db.exec(q);
+
+        });
+        const hasSelect: boolean = this.hasSelect(lastQuery);
+        hasSelect ? this.res = res : this.printTable(tableName, this.toggleLoading);
+      } else if (typeof queries === "string") {
+        const res = this.db.exec(queries);
+        const hasSelect: boolean = this.hasSelect(queries);
+        hasSelect ? this.res = res : this.printTable(tableName, this.toggleLoading);
+      }
+
+    }
+
+    /* =============================================
+    *   Check for guarding exceptions
+    * ============================================== */
+
+    /** Check input script is SELECT query */
+    private hasSelect(scr: String): boolean {
+      const arr = scr.split(' ');
+      return arr[0].toLowerCase() === 'select';
+    }
+
+    /** Check input script is INSERT query */
+    private hasInsert(scr: String): boolean {
+      const arr = scr.split(' ');
+      // console.log(arr)
+      return arr[0].toLowerCase() === 'insert';
+    }
+
+    private setRes(res: any) {
+      this.res = res
+    }
+
+    /* =============================================
+    *
+    * ============================================== */
+
+    /** Print table content and run finishing function */
+    private printTable(tableName: string, finishing: Function) {
+      this.res = this.db.exec(`SELECT * FROM ${tableName}`);
+      finishing ? finishing() : '';
+    }
+
+    /** toggle progress bar */
+    private toggleLoading() {
+      this.loading = !this.loading;
     }
   }
 </script>

@@ -84,174 +84,14 @@
 * 소유자 퇴근시간에 따른 개 행복도(산책횟수를 매개로 한)
 * 소유자 산책회수에 영향을 미치는 주거형태
 
-## 러브필드 스키마 정의
+## AaSQL.js 테이블 생성
 
-스키마는 관계형 테이터베이스의 구조로, **러브 필드**에서는 이름과 버전 숫자를 가진다. 러브 필드는 영구적인 저장 스토어
- 위에서 따로 스키마 구조를 생성해서 구동하므로, 이름과 버전 숫자를 조합한 유니크한 정보로 생성된 데이터베이스 
- 인스턴스를 확인한다. 자세한 건 [초기화] 참조.
-
-데이터 베이스 이름은 반드시 러브필드 [이름 규칙]을 따라야 한다. 버전은 반드시 0보다 커야한다.
- 이 버전은 데이터 베이스가 업그레이드가 필요한지 판단하는데 쓰인다. 
- 개발자는 [데이터베이스 업그레이드] 메커니즘을 사용해서 데이터 
- 마이그레이션을 지원할 수 있다.
- 
-[초기화]: ./spec.md#초기화
-[이름 규칙]: #이름-규칙
-[데이터베이스 업그레이드]: ./spec.md#데이터베이스-업그레이드
-
-### 이름 규칙
-
-```javascript
-/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)
-```
-
-위 정규식을 위반하는 이름은 예외를 낼 것이다.
-
-### 데이터 베이스 스키마 빌더
-
-정적 함수로 제공되는 `lf.schema.create()` 를 사용해 스키마를 생성하는 스키마 빌더를 생성할 수 있다.
- 러브 필드는 소스코드에 자세히 서술해 놓았고 소스 코드는 대응되어 제공되는 소스 코드에 스펙이 기술되어있다.
-  이것은 날짜가 지난 문서가 생성되는 것을 막기도 한다.
-
-러브필드 API 는 `lf` 네임스페이스 내부에 묶이며 이것은 글로벌 네임스페이스를 오염시키지 않기 위함이다. 
-모든 스키마 생성은 스키마 빌더를 초기화 함으로써 시작한다.  
-
-`lf.schema.create()`는 두 가지 기능을 제공하는 [`lf.schema.Builder`]의 인스턴스를 생성합니다 ,
-: [`createTable()`] 및 [`connect()`].
-`createTable()`은 스키마 빌더 안에 테이블 빌더를 인스턴스화합니다.
-빌더가 완료되면 효과적으로 테이블을 구성합니다.
-`connect()`는 스키마 빌드를 마무리 짓고 데이터 저장소에있는 데이터베이스 인스턴스에 연결합니다.
-
-`lf.schema.Builder` 클래스 객체는 stateful 입니다. : building 상태와
-최종완료 상태를 가집니다. 스키마는 building 상태에서만 수정할 수 있습니다. 일단
-완료되면 어떤 호출도 받지 않습니다.
-
-> stateful 서버측(여기서는 러브필드)가 상태를 가진다. 클라는 서버(러브필드 인스턴스)와 계속 접속되고 
-해당 인스턴스를 가지고 연속적으로 작업할 수 있다. 서버에서 가지고 있는 정보에 따라 클라이언트 요청에 
-다르게 응답하게 된다.
-> stateless 서버측(여기서는 러브필드)가 상태를 가지지 않는다. 클라는 매번 동일한 요청하면 매번 동일한 
-요청을 받고, 다시 작업하려면 다시 접속을 해야한다. 
-
-[`lf.schema.Builder`]: https://github.com/google/lovefield/blob/31f14db4995bb89fa053c99261a4b7501f87eb8d/lib/schema/builder.js#L32-L48
-[`createTable()`]: https://github.com/google/lovefield/blob/31f14db4995bb89fa053c99261a4b7501f87eb8d/lib/schema/builder.js#L134-L147
-[`connect()`]: https://github.com/google/lovefield/blob/31f14db4995bb89fa053c99261a4b7501f87eb8d/lib/schema/builder.js#L91-L109
-
-### 테이블 스키마 빌더 
-
-`lf.schema.Builder`의`createTable()`호출은 테이블 스키마를 작성하는 데 사용되는 
-[`lf.schema.TableBuilder`] 오브젝트를 반환합니다. Lovefield의 테이블은 SQL 테이블과 유사합니다. 
-사용자는 테이블 수준에서 인덱스와 제약 조건을 지정할 수 있습니다.
-`lf.schema.TableBuilder`의 모든 멤버 함수는 체인 패턴을 지원하기 위해 테이블 빌더 객체를 반환합니다.
-
-[`lf.schema.TableBuilder`]: https://github.com/google/lovefield/blob/8e47538d5f32986596a9e97ec97350cc6ed9ec1a/lib/schema/table_builder.js#L38-L77
-
-#### 열(컬럼, 속성)
-
-표에는 적어도 하나의 열이 포함되어 있으며 이 열은 표에 [`addColumn()`]에 의해 추가됩니다.
-열은 열 이름으로 식별되며 열 이름은 테이블 내에서 고유해야 합니다. 각 열은 연관된 데이터 유형을 가져야합니다. 
-
-지원되는 데이터 유형은 [`lf.Type`]에 나열됩니다  :
-
-[`addColumn()`]: https://github.com/google/lovefield/blob/8e47538d5f32986596a9e97ec97350cc6ed9ec1a/lib/schema/table_builder.js#L178-L191
-[`lf.Type`]: https://github.com/google/lovefield/blob/fafe224c75083698f1702c35c7908c25a8ea5951/lib/enums.js#L60-L93
-
-| 타입                 | 기본 값       | 기본으로 Nullable   |  설명                                |
-|:---------------------|:--------------|:--------------------|:-------------------------------------|
-|`lf.Type.ARRAY_BUFFER`|`null`         |가능                 |자바스크립트 `ArrayBuffer` 객체        |
-|`lf.Type.BOOLEAN`     |`false`        |불가능               |JavaScript `boolean` 객체           |
-|`lf.Type.DATE_TIME`   |`Date(0)`      |불가능               |JavaScript Date, 내부에서 timestamp 정수로 변환 |
-|`lf.Type.INTEGER`     |`0`            |불가능               |32-bit integer                        |
-|`lf.Type.NUMBER`      |`0`            |불가능               |JavaScript `number` 타입              |
-|`lf.Type.STRING`      |`''`           |불가능               |JavaScript `string` 타입              |
-|`lf.Type.OBJECT`      |`null`         |불가능               |JavaScript `Object`,                  |
-
-유형에 관계없이 모든 열은 [`TableBuilder#addNullable()`] 호출을 통해 nullable로 표시 될 수 있습니다.
-null 허용 열에 대한 기본값은 항상 `null`입니다. 위 표에서 보여지는 기본값은 열이 
-nullable로 표시되지 않은 경우를 나타냅니다.
-
-*`lf.Type.ARRAY_BUFFER`과`lf.Type.OBJECT` 타입의 열은 기본으로 (`addNullable()`이 명시 적으로 호출되지 않아도) nullable 입니다.
-* 명시 적 호출이 아닌 다른 유형의 열은 `addNullable()` 호출로 만들기 전에는 nullable이 아닌 것으로 간주됩니다.
- 이것은 일반적인 SQL 엔진과 매우 다른 행동입니다.
-
-Lovefield는 내부적으로 문자열 또는 숫자 만 인덱스 키로 사용합니다. 
-`lf.Type.ARRAY_BUFFER`와`lf.Type.OBJECT` 유형의 열은 인덱싱 할 수 없습니다 (즉, 인덱스 또는 제약 조건의 일부일 수 없음).
-`lf.Type.ARRAY_BUFFER` 열은 검색 가능하지 않습니다 (즉, WHERE 절의 일부가 될 수 없음). 
-반면(where as)에`lf.Type.OBJECT` 컬럼은`isNull`이나 `isNotNull` 를 가진 표현식(expression)에서만 사용될 수 있습니다. 
-(그렇지 않으면`lf.Exception`이 던져 질 것입니다). 
-암시적 전환은 다음의 유형들이 색인 / 주키로 사용되거나 고유(unique) 제한으로 놓여질 때 내부적으로 수행됩니다. 
-
-*`lf.Type.BOOLEAN` :`lf.Type.STRING`로 변환합니다.
-*`lf.Type.DATE_TIME` :`lf.Type.NUMBER`로 변환합니다.
-*`lf.Type.INTEGER` :`lf.Type.NUMBER`로 변환합니다.
-
-[`TableBuilder#addNullable()`]: https://github.com/google/lovefield/blob/8e47538d5f32986596a9e97ec97350cc6ed9ec1a/lib/schema/table_builder.js#L285-L297
-
-#### 1.3.2 제약 조건
-
-Lovefield 는 다음의 제한을 지원합니다.:
-
-* Primary key 주 키
-* Foreign key 외래 키
-* Unique 고유
-* Nullable / Not-nullable
-
-각 테이블에는 기본 키가 하나만있을 수 있습니다. 기본 키는 [`addPrimaryKey()`] 함수를 통해 추가됩니다.
-SQL 세계에서와 같이 기본 키는 고유하고 null이 아니라는 것을 의미합니다. 러브 필드는 자동 증가 기본 키를 지원합니다.
-이 기본 키는 정수 열(column)이어야합니다. 기본 오름차순이며 그 값은 Lovefield에 의해 할당되고 시작되며 1부터 시작합니다.
-
-외래 키는 [`addForeignKey()`]를 통해 추가됩니다.
-
-기본 키 및 외래 키 제약 조건 위반되면, 마치 SQL에서 일어나는 일과 같이 트랜잭션이 거절이 발생합니다.
-외래 키의 `opt_cascade`가 참일 때, Lovefield 쿼리 엔진은 필요하다면 계단식 삭제 및 업데이트를 수행합니다.
-
-고유 제약 조건은 [`addUnique()`]를 통해 추가됩니다 .
-고유 제한 조건은 암시적 색인을 의미합니다. 교차-열 고유제한은(cross-column unique constraint) 열의 값 조합이 고유해야 함을 의미합니다.
-
-이전 섹션에서 언급했듯이 모든 테이블 열은 기본적으로 NOT NULL입니다.
-사용자는 [`addNullable()`]를 호출하여 null 허용 열을 명시적으로 호출해야합니다.
-
-[`addPrimaryKey()`]: https://github.com/google/lovefield/blob/8e47538d5f32986596a9e97ec97350cc6ed9ec1a/lib/schema/table_builder.js#L194-L225
-[`addForeignKey()`]: https://github.com/google/lovefield/blob/8e47538d5f32986596a9e97ec97350cc6ed9ec1a/lib/schema/table_builder.js#L228-L264
-[`addUnique ()`]: https://github.com/google/lovefield/blob/8e47538d5f32986596a9e97ec97350cc6ed9ec1a/lib/schema/table_builder.js#L267-L282
-[`addNullable()`]: https://github.com/google/lovefield/blob/8e47538d5f32986596a9e97ec97350cc6ed9ec1a/lib/schema/table_builder.js#L285-L297
-
-#### 1.3.3 색인(indices)
-
-Lovefield는 제공한 색인을 사용하지 않고 자체 색인을 구현합니다.
-백업 데이터 저장소. 기본 인덱스 구조는 B+Tree입니다. 오직 null이 아니면서 인덱서블(indexable) 컬럼은 인덱싱 될 수 있습니다. 
-자세한 내용은 [Columns]을 참조하십시오. 어떤 열 데이터 유형이 인덱싱 가능한지와 관련하여
-
-인덱스는 [`addIndex()`]를 통해 추가됩니다. 색인은 단일 열 또는 교차 열일 수 있습니다. 
-대부분의 SQL 엔진과 달리 Lovefield는 인덱싱 된 열의 모든 값이 null이 아니어야한다는 제한이 있습니다. 
-모든 고유한(unique) 제약 조건은 암시적 인덱스를 작성하므로 같은 스콥에서 인덱스 생성하면 예외가 산출됩니다.
-
-Lovefield는 맞춤 색인을 지원하지 않습니다. 사용자 정의 색인이란 변환을 기반으로 하는 색인을 만드는 것을 의미합니다.
-전자 메일 주소 필드의 역(reverse) 텍스트 를 예를 들어봅시다. 
-Chrome 앱 v2 제약 조건으로 인해 JavaScript 함수를 항구적으로 유지하고나서(persist) 평가할 수 없어서 포함되지 않았습니다.
-되었습니다. 사용자는 자체 JavaScript로 변환수행하고 변환 된 데이터를 저장해야만 합니다.
-
-기본적으로 Lovefield는 로드 중에 테이블 인덱스를 메모리에 생성합니다.
-데이터 저장소에 색인을 유지합니다. 주어진 테이블의 인덱스는 [`persistentIndex()`]에서만 유지됩니다.
-
-[Columns]: #131-columns
-[`addIndex()`]: https://github.com/google/lovefield/blob/8e47538d5f32986596a9e97ec97350cc6ed9ec1a/lib/schema/table_builder.js#L327-L357
-[`persistentIndex()`]: https://github.com/google/lovefield/blob/8e47538d5f32986596a9e97ec97350cc6ed9ec1a/lib/schema/table_builder.js#L383-L386
-
-### 정적 스키마 구축
-
-Lovefield는 원래 정적 스키마 생성을 사용하도록 설계되었습니다. 아이디어는 YAML 파일의 데이터베이스 스키마를 나타내려면 
-Lovefield SPAC (스키마 해석기 그리고 코드 생성기)를 사용하여 YAML 파일에서 JavaScript 소스 코드를 생성 한 다음
-생성 된 코드와 함께 Lovefield 핵심 라이브러리를 사용하십시오. 이 접근법은 JavaScript 파일과 관련된 모든 것이 컴파일되고 
-클로저 컴파일러를 통해 번들로 묶일 때 가장 말이 됩니다. 결과적으로 이 접근법은 고급 주제로 간주되며 [자체 섹션]에 자세히 설명되어 있습니다.
-
-[자체 섹션]: ./spac.md
-
-### 정의(생성) 예시
+원문 : [AlaSQL Create Table](https://github.com/agershun/alasql/wiki/Sql), [SQLBolt Creating tables](https://sqlbolt.com/lesson/creating_tables)
 
 새 개체와 관계, 즉 엔티티 스키마를 데이터베이스에 저장하려고 할 때, SQL 에서는 `CREATE TABLE` 구문을 통해 테이블로 생성할 수 있다.
 
-```plsql
-테이블 생성 구문/ 추가적인 테이블 제약사항과 기본 값 포함
+```sql
+// 테이블 생성 구문/ 추가적인 테이블 제약사항과 기본 값 포함
 CREATE TABLE IF NOT EXISTS Asset (
     column 데이터종류 테이블_제약 DEFAULT 기본_값,
     another_column 데이터종류 테이블_제약 DEFAULT 기본_값,
@@ -261,7 +101,7 @@ CREATE TABLE IF NOT EXISTS Asset (
 
 고유번호, 자산명, 시간을 속성으로 가지는 자산이라는 엔티티를 데이터 베이스 테이블로 생성해보자.
 
-```plsql
+```sql
 CREATE TABLE IF NOT EXIST Asset{
     id STRING PRIMARY KEY,
     asset STRING,
@@ -269,20 +109,132 @@ CREATE TABLE IF NOT EXIST Asset{
 }
 ```
 
-러브필드에서는 다음과 같이 표현할 수 있다.
+AlaSQL.js 에서 그대로 쓸 수 있지만, 중괄호 대신 소괄호를 쓴다는 점이 다르다.
 
-```javascript
-// Begin schema creation.
-var schemaBuilder = lf.schema.create('crdb', 1);
-
-schemaBuilder.createTable('Asset').
-    addColumn('id', lf.Type.STRING).
-    addColumn('asset', lf.Type.STRING).
-    addColumn('timestamp', lf.Type.INTEGER).
-    addPrimaryKey(['id']);
+```js
+alasql('CREATE TABLE star (  \
+                one INT DEFAULT 100, \
+                two STRING,\
+                three BOOL PRIMARY KEY); \
+    ');
+    alasql('CREATE TABLE flight (flightNo INT, fromCity STRING, toCity STRING)');
 ```
 
+## 데이터 타입
+
+### 기본 자료 타입
+
+Integer (number with truncation)
+- smallint
+- integer
+- bigint
+
+Decimal (number)
+- decimal
+- numeric
+
+Floating-Point (number)
+- real
+- double precision
+
+Serial (number with AUTO_INCREMENT)
+- smallserial
+- serial
+- bigserial (maximum 9999999999999998, not 9223372036854775807 like in Postgres)
+
+Monetary (number)
+- money
+
+Character (string)
+- character varying(n), varchar(n), nvarchar(n)
+- character(n), char(n), nchar(n)
+- text
+
+Binary Data Types
+- TBD
+
+Date/Time (string and Date)
+- date - string
+- time - string
+- interval (number) - in milliseconds
+- Date - JavaScript Date object class
+
+Boolean (boolean)
+- boolean
+
+### 복잡한 자료 타입
+
+Enumeration (array of strings or numbers)
+- enum
+
+Geometric Types
+- Not realized
+
+Network Address Types
+- Not realized
+
+Bit String
+- Not realized
+
+Text Search
+- tsvector - not realized
+- tsquery - not realized
+
+UUID (string)
+- UUID
+
+XML (object with special structure)
+- xml - partially realized for SEARCH
+- html - not realized
+
+JSON (object)
+- json
+- jsonb - not yet realized
+
+Array (object)
+- multidimensional array[] - not yet realized, but can be imitated with JSON type
+
+Composite (object)
+- composite - not yet realized, but can be imitated with JSON type. See also CLASS type
+
+Range (object)
+- numrange - not yet realized
+- tsrange - not yet realized
+- daterange - not yet realized
+
+OID
+- not realized yet
+
+### Graph data types
+
+Class (realized with tables)
+- class
+
+Object (object)
+- object, json - JavaScript object class
+
+Document (object)
+- TBD
+
+Object reference (number or string)
+- TBD
+
+Domain
+- TBD
+
+Pseudo
+- not yet realized
+AlaSQL supports a number of standard SQL and JavaScript data types.
+
+#### 1.3.2 제약 조건
+
+
+
+
+
 ## 연습
+
+<query-pane hideTask="false" scriptName="getting-started"/>
 
 1. Create a new table named Database with the following columns:
 – Name A string (text) describing the name of the database
@@ -297,5 +249,3 @@ CREATE Table Database {
     Download_count INTEGER
 };
 ```
-
-<query-pane></query-pane>
