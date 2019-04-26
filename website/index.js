@@ -38,7 +38,7 @@ new Docute({
   target: 'app',
   title: 'Personal LoveField Exercise',
   layout: 'wide',
-  highlight: ['typescript', 'bash', 'json', 'markdown'],
+  highlight: ['typescript', 'bash', 'markdown', "sql", "json", "javascript", 'html', 'css'],
   plugins: [
     // process.env.NODE_ENV === 'production' && googleAnalytics('UA-54857209-11')
     docuteMermaid() // add mermaid support plugin
