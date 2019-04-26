@@ -2,5 +2,4 @@
 
 ## 연습
 
-<query-pane></query-pane>
  

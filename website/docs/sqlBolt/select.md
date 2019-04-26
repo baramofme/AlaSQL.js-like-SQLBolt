@@ -51,5 +51,7 @@ db.select().
 
 ## 연습
 
-<query-pane></query-pane>
+     
+<query-pane :hideTask="true" scriptName="getting-started" ></query-pane>
+
  
