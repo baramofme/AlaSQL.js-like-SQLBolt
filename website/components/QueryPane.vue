@@ -13,7 +13,7 @@
             <v-layout datatableid="data">
               <v-flex>
                 <v-data-table
-                  :headers="headers"
+                  :headers="datatableHeaders"
                   :items="res"
                   :rows-per-page-items=[6]
                   class="datatable"
@@ -55,12 +55,8 @@
               Exercise 1 — <span class="title">Tasks</span>
             </div>
             <v-stepper v-model="step" vertical>
-              <v-stepper-step :complete="step > 1" step="1">Find the `title` of each film</v-stepper-step>
-              <v-stepper-step :complete="step > 2" step="2"> Find the `director` of each film</v-stepper-step>
-              <v-stepper-step :complete="step > 3" step="3">Find the `title` and `director` of each film
+              <v-stepper-step v-for="qa in qas" :complete="step > qa.ord" :step="qa.ord">{{qa.question}}
               </v-stepper-step>
-              <v-stepper-step :complete="step > 4" step="4">Find the `title` and `year` of each film</v-stepper-step>
-              <v-stepper-step step="5">Find `all` the information about each film</v-stepper-step>
             </v-stepper>
           </v-flex><!-- /tasks_and_continue -->
         </v-layout>
@@ -70,139 +66,157 @@
 </template>
 
 <script lang="ts">
-  import {Vue, Component, Prop} from 'vue-property-decorator'
+  import { Vue, Component, Prop } from 'vue-property-decorator'
 
-  import InitScript from "./InitScript";
+  import InitScript from './InitScript'
 
   @Component({
     name: 'QueryPane'
   })
   export default class QueryPane extends Vue {
 
-    @Prop({default: true}) hideTask!: boolean;
-    @Prop(String) scriptName!: string;
+    @Prop({ default: true }) hideTask!: boolean
 
-    private scripts: any = [
-      require('../dataset/getting-started.ts')
-    ];
-
-    private script!: InitScript;
-    private tableName: string = '';
-    private initQueries!: string[];
-    private headers!: any;
-    private data!: any;
-
-    private alasql = require('alasql');
-    private db!: any;
-    private loading: boolean = false;
-    private query: string = '';
-    private res: any = '';
-
-    private x: string = '';
-    private step: number = 1;
+    private step: number = 1
 
     /* =============================================
     *   Prepare component Context for interacting
     * ============================================== */
 
+    private alasql = require('alasql')
+    private dbInstance!: any
+
+    @Prop(String) scriptName!: string
+    private tableName: string = ''
+    private initScript!: InitScript
+    private initQueries!: string[]
+    private datatableHeaders!: any
+    private dataForInsert!: any
+    private qas!: string[]
+
+    private scriptPack: any[] = [
+      require('../dataset/getting-started.ts')
+    ]
+
     private created() {
-      this.setData();
-      this.db = new this.alasql.Database(); // - 새 alasql-database 생성
-      this.runInitScript(this.tableName, this.initQueries);
+      this.setDataWithScriptName(this.scriptName)
+      this.dbInstance = new this.alasql.Database()
+      this.prepareContext(this.tableName, this.initQueries)
     }
 
-    /** Set Data with given dataset name */
-    private setData() {
-      const script = this.scripts.filter((script) => {
-        return script.default.name === this.scriptName;
-      });
+    private setDataWithScriptName(scriptName: string) {
 
-      // console.log(script)
-      this.script = new InitScript(script[0].default);
-      this.headers = this.script.dataSet.headers;
-      this.data = this.script.dataSet.data;
-      // console.log(this.data)
-      this.tableName = this.script.tableName;
-      this.initQueries = this.script.queries;
+      const matched: any = this.scriptPack.filter((initScript: any) => {
+        // console.log(initScript)
+        return initScript.default.name === scriptName
+      })
+
+      this.initScript = new InitScript(matched[0].default)
+      this.datatableHeaders = this.initScript.dataSet.headers
+      this.dataForInsert = this.initScript.dataSet.data
+      this.tableName = this.initScript.tableName
+      this.initQueries = this.initScript.queries
+      this.qas = this.initScript.qas
     }
 
-    /** Run Scripts for preparing component */
-    private runInitScript(tableName, queries): void {
-      this.runQueries(tableName, queries);
+    private prepareContext(tableName: string, queries: string[]): void {
+      this.runQueries(tableName, queries)
     }
 
     /* =============================================
-    *   Prepare component context for interacting
+    *   Run Queries
     * ============================================== */
 
-    /** Execute user's query */
+    private query: string = ''
+    private res: any = ''
+
     private runUserInputQuery() {
-      this.runQueries(this.tableName, this.query);
+      // @TODO need some function to check input query make sense
+      if(!this.query){
+        return
+      }
+      this.CheckAndNext()
+      this.runQueries(this.tableName, [this.query])
     }
 
     /** Execute one or more query on target table */
-    private runQueries(tableName: string, queries: string[] | string) {
+    private runQueries(tableName: string, queries: string[]) {
 
-      this.toggleLoading();
+      this.toggleLoading()
 
-      const isArray: boolean = typeof queries === "object" && queries.constructor.name === "Array";
-      const lastQuery = isArray ? queries[queries.length - 1] : queries;
+      const lastQuery = queries[queries.length - 1]
+      console.log(lastQuery)
+      let res: any
 
-      // typescript can't recognize type guard inside isArray variable.
-      if (typeof queries === "object" && queries.constructor.name === "Array") {
-        let res: any;
-        queries.forEach((q, index, array) => {
-          this.hasInsert(q) && this.data
-            ? this.db.exec(q, [this.data])
+      /** If Init queries given, Do insert.*/
+      if (queries.length > 1) {
+        queries.forEach((q: string) => {
+          this.hasInsert(q) && this.dataForInsert
+            ? this.dbInstance.exec(q, [this.dataForInsert])
             : this.hasSelect(q)
-              ? res = this.db.exec(q)
-              : this.db.exec(q);
+            ? res = this.dbInstance.exec(q)
+            : this.dbInstance.exec(q)
+        })
+      } else {
 
-        });
-        const hasSelect: boolean = this.hasSelect(lastQuery);
-        hasSelect ? this.res = res : this.printTable(tableName, this.toggleLoading);
-      } else if (typeof queries === "string") {
-        const res = this.db.exec(queries);
-        const hasSelect: boolean = this.hasSelect(queries);
-        hasSelect ? this.res = res : this.printTable(tableName, this.toggleLoading);
+        res = this.dbInstance.exec("SELECT title FROM movies")
+        console.log('쿼리',res)
       }
 
+      const needSelectStatement: boolean = !this.hasSelect(lastQuery)
+      // @TODO
+      console.log('필요',needSelectStatement)
+      needSelectStatement ? this.printTable(tableName, this.toggleLoading) : this.assignRes(res, this.toggleLoading)
     }
 
     /* =============================================
-    *   Check for guarding exceptions
+    * Check Question
+    * ============================================== */
+
+    /** Check input script is SELECT query */
+    private CheckAndNext(): void {
+      const currentQa: any = this.qas.find((qa: any) => qa.ord === this.step)
+      this.query === currentQa.answer ? this.step = this.step+1: ''
+    }
+
+    /* =============================================
+    *   Check for Controlling state
     * ============================================== */
 
     /** Check input script is SELECT query */
     private hasSelect(scr: String): boolean {
-      const arr = scr.split(' ');
-      return arr[0].toLowerCase() === 'select';
+      const arr = scr.split(' ')
+      return arr[0].toLowerCase() === 'select'
     }
 
     /** Check input script is INSERT query */
     private hasInsert(scr: String): boolean {
-      const arr = scr.split(' ');
+      const arr = scr.split(' ')
       // console.log(arr)
-      return arr[0].toLowerCase() === 'insert';
-    }
-
-    private setRes(res: any) {
-      this.res = res
+      return arr[0].toLowerCase() === 'insert'
     }
 
     /* =============================================
-    *
+    * Change Screens
     * ============================================== */
+
+    private loading: boolean = false
 
     /** Print table content and run finishing function */
     private printTable(tableName: string, finishing: Function) {
-      this.res = this.db.exec(`SELECT * FROM ${tableName}`);
-      finishing ? finishing() : '';
+      this.res = this.dbInstance.exec(`SELECT * FROM ${tableName}`)
+      finishing ? finishing() : ''
+    }
+
+    /** Assign result and run finishing function */
+    private assignRes(res: any, finishing: Function) {
+      this.res = res
+      finishing ? finishing() : ''
     }
 
     /** toggle progress bar */
     private toggleLoading() {
-      this.loading = !this.loading;
+      this.loading = !this.loading
     }
   }
 </script>

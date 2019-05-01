@@ -1,4 +1,4 @@
-# LoveField Lesson 2: 테이블 생성
+# AlaSQL.js Lesson : 테이블 생성
 
 ## 도식, 개체 그리고 관계
 
@@ -124,110 +124,64 @@ alasql('CREATE TABLE star (  \
 
 ### 기본 자료 타입
 
-Integer (number with truncation)
-- smallint
-- integer
-- bigint
+|  정수 | 십진수 | 부동 소수점수 | Serial |
+| :---: | :---: | :---: | :---: |
+|  number with truncation | *(number)* | *(number)* | *(number with AUTO_INCREMENT)* |
+|  *- smallint* | *- decimal* | *- real* | *- smallserial* |
+|  *- integer* | *- numeric* | *- double precision* | *- serial* |
+|  *- bigint* | ** | ** | *- bigserial* |
 
-Decimal (number)
-- decimal
-- numeric
-
-Floating-Point (number)
-- real
-- double precision
-
-Serial (number with AUTO_INCREMENT)
-- smallserial
-- serial
-- bigserial (maximum 9999999999999998, not 9223372036854775807 like in Postgres)
-
-Monetary (number)
-- money
-
-Character (string)
-- character varying(n), varchar(n), nvarchar(n)
-- character(n), char(n), nchar(n)
-- text
-
-Binary Data Types
-- TBD
-
-Date/Time (string and Date)
-- date - string
-- time - string
-- interval (number) - in milliseconds
-- Date - JavaScript Date object class
-
-Boolean (boolean)
-- boolean
+|  문자 | 날짜/시간 | Boolean  | Monetary |
+| :---: | :---: | :---: | :---: |
+|  *(string)* | *(string and Date)* | *(boolean)* | (number) |
+|  *- character varying(n), varchar(n), nvarchar(n)* | *- date - string* | *- boolean* | *- money* |
+|  *- character(n), char(n), nchar(n)* | *- time - string* | ** | ** |
+|  *- text* | *- interval (number) - in milliseconds* | ** | ** |
+|  ** | *- Date - JavaScript Date object class* | ** |  |
 
 ### 복잡한 자료 타입
 
-Enumeration (array of strings or numbers)
-- enum
+|  Enumeration (array of strings or numbers) | JSON | UUID | 배열 |
+| --- | --- | --- | --- |
+|  ** | *(object)* | *(string)* | *(object)* |
+|  *- enum* | *- json* | *- UUID* | *- multidimensional array[] - not yet realized, but can be imitated with JSON type* |
+|  ** | *- jsonb - not yet realized* | ** | ** |
 
-Geometric Types
-- Not realized
+|  Text Search | XML  | Range  | OID |
+| --- | --- | --- | --- |
+|  ** | (object with special structure) | *(object)* | ** |
+|  *- tsvector - not realized* | *- xml - partially realized for SEARCH* | *- numrange - not yet realized* | *- not realized yet* |
+|  *- tsquery - not realized* | *- html - not realized* | *- tsrange - not yet realized* | ** |
+|  ** | ** | *- daterange - not yet realized* | ** |
 
-Network Address Types
-- Not realized
+|  Composite  | Geometric Types | Network Address Types | Bit String |
+| --- | --- | --- | --- |
+|  *(object)* | ** | ** | ** |
+|  *- composite - not yet realized, but can be imitated with JSON type. See also CLASS type* | *- Not realized* | *- Not realized* | *- Not realized* |
 
-Bit String
-- Not realized
+### 그래프 데이터 타입
 
-Text Search
-- tsvector - not realized
-- tsquery - not realized
+|  Class | Object | Document  | Object reference |
+| --- | --- | --- | --- |
+|  (realized with tables) | (object) | (object) | (number or string) |
+|  - class | - object, json - JavaScript object class | - TBD | - TBD |
 
-UUID (string)
-- UUID
+|  Domain | Pseudo |  |  |
+| --- | --- | --- | --- |
+|  - TBD | - not yet realized |  |  |
 
-XML (object with special structure)
-- xml - partially realized for SEARCH
-- html - not realized
-
-JSON (object)
-- json
-- jsonb - not yet realized
-
-Array (object)
-- multidimensional array[] - not yet realized, but can be imitated with JSON type
-
-Composite (object)
-- composite - not yet realized, but can be imitated with JSON type. See also CLASS type
-
-Range (object)
-- numrange - not yet realized
-- tsrange - not yet realized
-- daterange - not yet realized
-
-OID
-- not realized yet
-
-### Graph data types
-
-Class (realized with tables)
-- class
-
-Object (object)
-- object, json - JavaScript object class
-
-Document (object)
-- TBD
-
-Object reference (number or string)
-- TBD
-
-Domain
-- TBD
-
-Pseudo
-- not yet realized
 AlaSQL supports a number of standard SQL and JavaScript data types.
 
-#### 1.3.2 제약 조건
+## 제약 조건
 
+|  **Constraint** | Description |
+| --- | --- |
+|  **PRIMARY KEY** | This means that the values in this column are unique, and each value can be used to identify a single row in this table. |
+|  **AUTOINCREMENT** | For integer values, this means that the value is automatically filled in and incremented with each row insertion. Not supported in all databases. |
+|  **UNIQUE** | This means that the values in this column have to be unique, so you can't insert another row with the same value in this column as another row in the table. Differs from the `PRIMARY KEY` in that it doesn't have to be a key for a row in the table. |
+|  **NOT NULL** | This means that the inserted value can not be `NULL`. |
+|  **CHECK (expression)** | This is allows you to run a more complex expression to test whether the values inserted are value. For example, you can check that values are positive, or greater than a specific size, or start with a certain prefix, etc. |
+|  **FOREIGN KEY** | This is a consistency check which ensures that each value in this column corresponds to another value in a column in another table.<br/><br/>For example, if there are two tables, one listing all Employees by ID, and another listing their payroll information, the `FOREIGN KEY` can ensure that every row in the payroll table corresponds to a valid employee in the master Employee list. |
 
 
 

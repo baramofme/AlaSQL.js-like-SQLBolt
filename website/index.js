@@ -36,7 +36,7 @@ window.mermaid = require('mermaid');
 
 new Docute({
   target: 'app',
-  title: 'Personal LoveField Exercise',
+  title: 'Personal AlaSQL.js Exercise',
   layout: 'wide',
   highlight: ['typescript', 'bash', 'markdown', "sql", "json", "javascript", 'html', 'css'],
   plugins: [

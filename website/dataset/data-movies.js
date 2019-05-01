@@ -3,7 +3,7 @@ export default {
     {
       text: 'Id',
       align: 'left',
-      sortable: false,
+      sortable: true,
       value: 'Id'
     },
     {text: 'Title', value: 'title'},
